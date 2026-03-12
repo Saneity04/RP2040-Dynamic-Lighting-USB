@@ -245,6 +245,7 @@ void loop() {
     bool showUpdate = false;
 
     if(AutonomousMode){
+        //Play Game of Life animation
         if(generation == 0){
             randomFillWorld();
             chooseNewPalette();
