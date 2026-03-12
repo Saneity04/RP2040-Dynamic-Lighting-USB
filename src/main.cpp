@@ -255,7 +255,7 @@ void loop() {
         stepWorld();
         delay(350);
         generation++;
-        if(generation >= 50){
+        if(generation >= 128){
             generation = 0;
         }
         showUpdate = true;
@@ -424,7 +424,7 @@ void updateLampColors() {
         for (uint8_t y = 0; y < LAMP_ROWS; y++) {
             uint16_t lampId = XY(x, y);  // Map to lamp ID
             if (world[x][y].alive) {
-                leds_matrix[lampId] = ColorFromPalette(currentPalette, world[x][y].hue * 4, world[x][y].brightness);
+                leds_matrix[lampId] = ColorFromPalette(currentPalette, world[x][y].hue * 2, world[x][y].brightness);
             } else {
                 leds_matrix[lampId] = CRGB::Black;
             }
@@ -434,33 +434,38 @@ void updateLampColors() {
 
 void stepWorld() {
     bool anyAlive = false;
+    bool stable = true;  // assume stable first
 
     // Step 1: compute next generation
     for (uint8_t x = 0; x < LAMP_COLS; x++) {
         for (uint8_t y = 0; y < LAMP_ROWS; y++) {
             uint8_t n = neighbors(x, y);
+
             if (world[x][y].prev) {
-                // Alive
                 world[x][y].alive = (n == 2 || n == 3);
             } else {
-                // Dead
                 world[x][y].alive = (n == 3);
                 if (world[x][y].alive) world[x][y].brightness = 255;
-                world[x][y].hue += 2; // optional color change
+                world[x][y].hue += 2;
             }
 
-            if (world[x][y].alive) anyAlive = true; // track any live cells
+            if (world[x][y].alive) anyAlive = true;
+
+            // detect change
+            if (world[x][y].alive != world[x][y].prev) {
+                stable = false;
+            }
         }
     }
 
-    // Step 2: reset only if all dead
-    if (!anyAlive) {
-        randomFillWorld();  // new seed
-        chooseNewPalette(); // new palette
+    // Step 2: reset if dead or stable
+    if (!anyAlive || stable) {
+        randomFillWorld();
+        chooseNewPalette();
         generation = 0;
     }
 
-    // Step 3: copy next gen to prev
+    // Step 3: copy next generation
     for (uint8_t x = 0; x < LAMP_COLS; x++)
         for (uint8_t y = 0; y < LAMP_ROWS; y++)
             world[x][y].prev = world[x][y].alive;
