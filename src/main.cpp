@@ -2,6 +2,7 @@
     RP2040 USB Dynamic Lighting Device
     Using USB LampArray to control 8x11 matrix with Microsoft Dynamic Lighting
     Restart Windows everytime attributes is changed to remove the cache of previous attributes in Windows.
+    The matrix is wired in serpentine way using WS2812B leds
 */
 
 
